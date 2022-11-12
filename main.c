@@ -1,72 +1,88 @@
-/*printf("CENTRO UNIVERSITÁRIO CESUMAR \n");
-printf ("Curso: Bacharelado em Engenharia de Software \n");
-printf ("Discilplina: Algorítmos e Lógica de Programação 2 \n");
-printf ("Atividade: MAPA Modulo 52/22 \n");
-printf ("Aluno: Wellitom Rafael Queiroz dos Santos \n");
-printf ("RA: 22032770-5 \n"); */
-
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
+#include <locale.h>
+#include <ctype.h>
 
-typedef struct vacinacao
+
+struct Vacinacao
 {
     int codigo;
     char nome[100];
-    char cpf[14];
+    char cpf[20];
     char vacina[30];
-    char data[10];
-    int lote;
-    struct vacinacao *proximo;
-    
-}Vacinacao;
+    char data[15];
+    char lote[20];
+};
 
-typedef struct{
-    Vacinacao *inicio;
-    int tam;
-}Lista;
-
-void inserirInicio (Lista *lista, int codigo){
-    Vacinacao *no, *novo = (Vacinacao*)malloc(sizeof(Vacinacao));
-    novo->codigo = codigo;
-    novo -> proximo = NULL;
+int verificarCPF(char CPF[], struct Vacinacao* vacinacao, int nPaciente){
+    int i;
     
-    if (lista-> inicio ==NULL){
-        lista->inicio=novo;
-    } else{
-        no = lista->inicio;
-        while (no->proximo != NULL)
-            no = no->proximo;
-        no->proximo=novo;
+    if (CPF[3] != '.' || CPF[7] != '.' || CPF[11] != '-')
+        return 0;
+    
+    for (i=0; i<3; i++){
+        if (isdigit(CPF[i])==0)
+            return 0;
     }
-    lista->tam++;
+    
+    for (i=4; i<7; i++){
+        if (isdigit(CPF[i])==0)
+            return 0;
+    }
+    
+    for (i=8; i<11; i++){
+        if (isdigit(CPF[i])==0)
+            return 0;
+    }
+    for (i=12; i<14; i++){
+        if (isdigit(CPF[i])==0)
+            return 0;
+    }
+    for (i=0; i<nPaciente;i++){
+        if(strcmp(CPF, vacinacao[i].cpf)==0)
+        return 0;
+    }
+    return 1;
 }
 
-void imprimir (Lista *lista){
-    Vacinacao *inicio = lista -> inicio;
-    while (inicio != NULL){
-        printf ("%d", inicio -> codigo);
-        inicio = inicio -> proximo;
+int verificaData (char data[]){
+    int i=0;
+    
+    if (data[2] != '/' || data[5] != '/')
+        return 0;
+    
+    for (i=0; i<2; i++){
+        if (isdigit(data[i])==0)
+            return 0;
     }
-    printf ("\n\n");
+    for (i=3; i<5; i++){
+        if (isdigit(data[i])==0)
+            return 0;
+    }
+    
+    for (i=6; i<8; i++){
+        if (isdigit(data[i])==0)
+            return 0;
+    }
+    return 1;
 }
 
 
-
-
-int main() {
-    Vacinacao vacinacao;
-    int opcao, codigo=0, i=0;
-    Lista lista;
+int main(int argc, const char * argv[])
+{
+    setlocale(LC_ALL, "portuguese");
     
-    lista.inicio = NULL;
-    lista.tam = 0;
+    struct Vacinacao vacinacao[9999];
+    int opcao, paciente=0, nPaciente=0, i=0;
+    char CPF[20], data[9];
     
     printf("========================================================\n");
-    printf("SISTEMA NACIONAL DE CONTROLE DE VACINAÇÃO COVID-19 \n");
+    printf("   SISTEMA NACIONAL DE CONTROLE DE VACINAÇÃO COVID-19    \n");
     printf("======================================================== \n \n");
     
     do {
-        printf ("Escolha uma opção: \n\n");
+        printf ("\n*** Escolha uma opção ***\n\n");
         printf ("1 - Cadastrar paciente \n");
         printf ("2 - Listar registros \n");
         printf ("3 - Consulta por CPF \n");
@@ -76,125 +92,85 @@ int main() {
         switch (opcao) {
             
             case 1:
-                printf ("Digite o CPF (formato 123.123.123-12): \n");
-                fgets(vacinacao.cpf, 14, stdin);
-                fflush (stdin);
-                printf ("Informe o nome do paciente: \n");
-                fgets (vacinacao.nome,100,stdin);
-                printf ("Informe a vacina: \n");
-                fgets (vacinacao[i].vacina, 30, stdin);
-                fflush (stdin);
-                printf ("Informe a data da vacinação (formato DD/MM/AAAA): \n");
-                fgets (vacinacao[i].data, 10, stdin);
-                fflush (stdin);
-                printf ("Informe o lote da vacina (formato 123123123): \n");
-                scanf ("%d",&vacinacao[i].lote);
-                fflush (stdin);
-                inserirInicio (&lista, codigo);
-                break;
-
-            case 2:
-                imprimir(&lista);
-                printf ("================================================= \n");
-                break;
+                
+                do{
+                printf("Digite a quantidade de pacientes a serem cadastrados. \n");
+                scanf("%d",&paciente);
+                } while (paciente == 0);
+                fflush(stdin);
+                
+                do{
+                    
+                    printf ("Digite o nome do paciente: \n");
+                    fgets (vacinacao[nPaciente].nome, 100, stdin);
             
-            case 4:
-        printf ("Obrigado por utilizar o Sistema Nacional de Controle de Vacinação contra COVID-19. \n");
+                    fflush(stdin);
+                    
+                    do{
+                        printf("Digite o CPF do usuário (formato 123.123.123-12): \n");
+                        fgets (CPF, 15, stdin);
+                    } while (verificarCPF (CPF, vacinacao, nPaciente)==0);
+                    strcpy(vacinacao[nPaciente].cpf, CPF);
+                    fflush(stdin);
+                    
+                    printf ("Digite o a marca da vacina aplicada: \n");
+                    fgets (vacinacao[nPaciente].vacina, 30, stdin);
+                    fflush(stdin);
+                   
+                    do{
+                    printf ("Digite a data da dose (formato DD/MM/AA): \n");
+                    fgets(data, 9, stdin);
+                    } while (verificaData(data)==0);
+                    strcpy(vacinacao[nPaciente].data, data);
+                    fflush(stdin);
+                    
+                    printf ("Digite o lote da vacina: \n");
+                    scanf("%s", vacinacao[nPaciente].lote);
+                    fflush(stdin);
+                    vacinacao[nPaciente].codigo = nPaciente +1;
+                    nPaciente++;
+                    paciente--;
+                    
+                }
+                while (paciente>0);
                 break;
-            
-            default:
-                printf ("Opção inválida \n\n");
+            case 2: ;
+                for (i = 0; i < nPaciente; i++){
+                    printf("-------------------------------------------- \n");
+                    printf("Código: %d \n",vacinacao[i].codigo);
+                    printf ("Nome: %s \n",vacinacao[i].nome);
+                    printf ("CPF: %s \n",vacinacao[i].cpf);
+                    printf("Vacina: %s \n",vacinacao[i].vacina);
+                    printf("Data da vacinação: %s \n",vacinacao[i].data);
+                    printf("Lote: %s \n\n",vacinacao[i].lote);
+                    printf("-------------------------------------------- \n\n");
+                }
+                break;
+            case 3:;
+                
+                    printf("Digite o CPF do paciente (formato 123.123.123-12)\n");
+                    scanf("%s", CPF);
+                    fflush(stdin);
+                
+                
+                for (i=0; i < nPaciente; i++){
+                    
+                    if (strcmp(CPF, vacinacao[i].cpf)==0){
+                        printf("-------------------------------------------- \n");
+                        printf("Código: %d \n",vacinacao[i].codigo);
+                        printf ("Nome: %s \n",vacinacao[i].nome);
+                        printf ("CPF: %s \n",vacinacao[i].cpf);
+                        printf("Vacina: %s \n",vacinacao[i].vacina);
+                        printf("Data da vacinação: %s \n",vacinacao[i].data);
+                        printf("Lote: %s \n\n",vacinacao[i].lote);
+                        printf("-------------------------------------------- \n\n");
+                        break;
+                    }
+                }
                 break;
         }
+    } while (opcao !=4 || opcao==0  || opcao>4);{
+        printf ("Obrigado por utilizar o Sistema de Nacional de Cadastro de Vacinação COVID-19 \n\n");
     }
-    while (opcao !=4 || opcao > 4);
-    
-    /*if (opcao == 1){
-        printf ("Informe a quantidade de pacientes a serem cadastrados: \n");
-        scanf ("%d",&count);
-        
-        while (i <= count){
-            cadastro[i].codigo = i;
-            fflush (stdin);
-            printf ("Digite o CPF (formato 123.123.123-12): \n");
-            fgets(cadastro[i].cpf, 14, stdin);
-            fflush (stdin);
-            printf ("Informe o nome do paciente: \n");
-            fgets (cadastro[i].nome,100,stdin);
-            printf ("Informe a vacina: \n");
-            fgets (cadastro[i].vacina, 30, stdin);
-            fflush (stdin);
-            printf ("Informe a data da vacinação (formato DD/MM/AAAA): \n");
-            fgets (cadastro[i].data, 10, stdin);
-            fflush (stdin);
-            printf ("Informe o lote da vacina (formato 123123123): \n");
-            scanf ("%d",&cadastro[i].lote);
-            fflush (stdin);
-            i++;
-        }
-        
-        
-    }
-    else{
-        if (opcao == 2){
-        
-                printf ("Código: %d \n",cadastro[i].codigo);
-                printf ("Nome: %s \n",cadastro[i].nome);
-                printf ("CPF: %s \n",cadastro[i].cpf);
-                printf ("Vacina: %s \n",cadastro[i].vacina);
-                printf ("Data da vacinação: %s \n",cadastro[i].data);
-                printf ("Lote: %d \n",cadastro[i].lote);
-                printf ("================================================= \n\n");
-           
-        }
-    }*/
     return 0;
 }
-
-/*switch (opcao) {
-    
-    case 1:
-        printf ("Informe a quantidade de pacientes a serem cadastrados: \n");
-        scanf ("%d",&count);
-        
-        for (i=1; i<=count; i++){
-            cadastro[i].codigo = i;
-            fflush (stdin);
-            printf ("Digite o CPF (formato 123.123.123-12): \n");
-            fgets(cadastro[i].cpf, 14, stdin);
-            fflush (stdin);
-            printf ("Informe o nome do paciente: \n");
-            fgets (cadastro[i].nome,100,stdin);
-            printf ("Informe a vacina: \n");
-            fgets (cadastro[i].vacina, 30, stdin);
-            fflush (stdin);
-            printf ("Informe a data da vacinação (formato DD/MM/AAAA): \n");
-            fgets (cadastro[i].data, 10, stdin);
-            fflush (stdin);
-            printf ("Informe o lote da vacina (formato 123123123): \n");
-            scanf ("%d",&cadastro[i].lote);
-            fflush (stdin);
-        }
-        break;
-
-    case 2:
-        printf ("Código: %d \n",cadastro[i].codigo);
-        printf ("Nome: %s \n",cadastro[i].nome);
-        printf ("CPF: %s \n",cadastro[i].cpf);
-        printf ("Vacina: %s \n",cadastro[i].vacina);
-        printf ("Data da vacinação: %s \n",cadastro[i].data);
-        printf ("Lote: %d \n",cadastro[i].lote);
-        printf ("=================================================");
-        break;
-    
-    case 3:
-        break;
-    
-    case 4:
-        break;
-    
-    default:
-        printf ("Opção inválida \n\n");
-        break;
-}*/
-
